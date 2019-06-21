@@ -664,4 +664,3 @@ class Go_pay_money(APIView):
 
         return Response({'code':200,'pay_url':pay_url})
 
-print('-----------------')
