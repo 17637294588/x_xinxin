@@ -663,3 +663,5 @@ class Go_pay_money(APIView):
         pay_url = "https://openapi.alipaydev.com/gateway.do?{0}".format(query_params)  # 支付宝网关地址（沙箱应用）
 
         return Response({'code':200,'pay_url':pay_url})
+
+print('-----------------')
