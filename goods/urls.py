@@ -18,7 +18,12 @@ urlpatterns = [
     re_path(r'get_orders_message/',views.Get_orders_message.as_view()),
     path(r'change_adres/',views.Change_adres.as_view()),
     re_path(r'get_my_orders/',views.Get_my_orders.as_view()),
-    # re_path(r'sub_price/',views.Gub_price.as_view()),
     re_path(r'paymes/',views.Paymes.as_view()),
     re_path(r'go_pay_money/(?P<order_code>\d+)/',views.Go_pay_money.as_view()),
+    re_path(r'refund_money/(?P<order_code>\d+)/',views.Refund_money.as_view()),
+    path(r'alipayreturn/',views.Alipayreturn.as_view()),
+    path(r'return_money/',views.Return_money.as_view()),
+
+    path(r'demo/',views.Demo.as_view()),
+
 ]

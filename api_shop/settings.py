@@ -66,7 +66,7 @@ ROOT_URLCONF = 'api_shop.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR,'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -266,3 +266,4 @@ CKEDITOR_UPLOAD_PATH = '' # 上传图片保存路径,使用了fastDFS,这里设�
 #     }
 
 # }
+

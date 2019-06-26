@@ -356,23 +356,26 @@ class Cart_mes(APIView):
         
         r_obj = Set_redis()
         sku_id_list = r_obj.get_cart_mes(user_id)  # sku_id_list:里面包含 key:sku_id,value:number
+        if sku_id_list:
+            total = 0
+            data = []
+            for sku_id,number in sku_id_list.items():
+                goods_sku = GoodsSku.objects.filter(id=int(sku_id)).first()
+                dict1 = {
+                    'id':goods_sku.id,
+                    'image_url':goods_sku.default_image_url.url,
+                    'name':goods_sku.name,
+                    'price':goods_sku.price,
+                    'number':int(number),
+                    'total':int(number) * goods_sku.price
+                }
+                total += int(number) * goods_sku.price
+                data.append(dict1)
+            lens = len(data)
+            return Response({'data':data,'lens':lens,'total':total})
+        else:
+            return Response({'code':200})
 
-        total = 0
-        data = []
-        for sku_id,number in sku_id_list.items():
-            goods_sku = GoodsSku.objects.filter(id=int(sku_id)).first()
-            dict1 = {
-                'id':goods_sku.id,
-                'image_url':goods_sku.default_image_url.url,
-                'name':goods_sku.name,
-                'price':goods_sku.price,
-                'number':int(number),
-                'total':int(number) * goods_sku.price
-            }
-            total += int(number) * goods_sku.price
-            data.append(dict1)
-        lens = len(data)
-        return Response({'data':data,'lens':lens,'total':total})
 
 
         # {b'4': b'2', b'1': b'1'}
@@ -618,13 +621,14 @@ class Paymes(APIView):
 
         params = request.GET.dict()         # 处理get参数部分
         order_code = params['out_trade_no']
+        trade_no = params['trade_no']      # 支付编号 入库，用来退款使用
         sign = params.pop('sign', None)     # 获取sign签证值
         alipay = get_ali_object()
         status = alipay.verify(params, sign) # 校验，如果校验成功则返回True
         
         if status == True:
             # 订单验证成功修改数据库支付状态
-            Orders.objects.filter(order_code=order_code).update(status=2)
+            Orders.objects.filter(order_code=order_code).update(status=2,trade_no=trade_no)
 
 
         return redirect('http://127.0.0.1:8080/#/user_center_order/')
@@ -664,3 +668,73 @@ class Go_pay_money(APIView):
 
         return Response({'code':200,'pay_url':pay_url})
 
+
+
+
+# 退款接口
+class Refund_money(APIView):
+
+    def get(self,request,order_code):
+        
+        order = Orders.objects.filter(order_code=order_code).first()
+
+        #实例化支付类
+        alipay = get_ali_object()
+        #调用退款方法
+        order_string = alipay.api_alipay_trade_refund(
+            #订单号，一定要注意，这是支付成功后返回的唯一订单号
+            out_trade_no = order_code,
+            refund_amount = float(order.total_manoy),
+            #回调网址
+            notify_url = 'http://localhost:8000/api/alipayreturn'
+        )
+        
+        return Response(order_string)
+
+
+
+
+# 退款支付宝将参数数据返回给了前端，我从前端将数据发过来，用于修改表字段状态
+import json
+class Return_money(APIView):
+
+    '''
+        {"alipay_trade_refund_response":{"code":"20000","msg":"Service Currently Unavailable","sub_code":"aop.ACQ.SYSTEM_ERROR","sub_msg":"系统异
+        常","refund_fee":"0.00","send_back_fee":"0.00"},"sign":"S5OMpsL4avE+TnoQzrZMqmSdUcgpXFap2tVxd4hwN43C3QzRI0/UunuOJksRDcdF5zOinIp9vMut8I6I4USrpVgJA0y8kd2WrAzRjkRz5aw4e5Se8wiHCbYfTxWrypdXFuWf9AbAoDb1OgqX6RmfBilOOmSuL3A/OsbEI/EjkV/ZBVOuB0OdGvNZTfMLkFIi0WHOMeLwWkKSa4UQzr2s2om/+pSKG9brIErnYpVZ7ES3mBGEK7DRCFiP+I7YyI1dQC9ViVN83M/a/6C4Qw6hWnwHvxuHvqdsdTB63srXagM8vuAoEg0U+CMzJ9k+A3BSOONSjdvTLi634wkbCdTqkA=="}
+    '''
+
+    def post(self,request):
+
+        order_code = request.data['order_code']
+        return_res = json.loads(request.data['return_res'])
+    
+        code = return_res['alipay_trade_refund_response']['code']
+
+        if code == '10000':
+            Orders.objects.filter(order_code=order_code).update(status=3)
+        return Response({'code':200})
+        
+ 
+
+
+
+
+
+# 回调连接
+class Alipayreturn(APIView):
+
+    def get(self,request):
+        print('===============')
+        print(request.GET.dict())
+
+        # return Response({'code':200})
+
+
+
+
+
+class Demo(APIView):
+
+    def get(self,request):
+
+        return render(request,'demo.html')

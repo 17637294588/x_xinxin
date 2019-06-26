@@ -5,7 +5,7 @@ from Crypto.Hash import SHA256
 from urllib.parse import quote_plus
 from urllib.parse import urlparse, parse_qs
 from base64 import decodebytes, encodebytes
-import json
+import json,requests
 
 class AliPay(object):
     """
@@ -111,3 +111,21 @@ class AliPay(object):
         unsigned_items = self.ordered_data(data)
         message = "&".join(u"{}={}".format(k, v) for k, v in unsigned_items)
         return self._verify(message, signature)
+
+
+
+    # 退款方法
+    def api_alipay_trade_refund(self, refund_amount, out_trade_no=None, trade_no=None, **kwargs):
+        biz_content = {
+            "refund_amount": refund_amount
+        }
+        biz_content.update(**kwargs)
+        if out_trade_no:
+            biz_content["out_trade_no"] = out_trade_no
+        if trade_no:
+            biz_content["trade_no"] = trade_no
+        data = self.build_body("alipay.trade.refund", biz_content)
+        url = self.__gateway + "?" + self.sign_data(data)
+        r = requests.get(url)
+        html = r.content.decode("utf-8")
+        return html

@@ -82,7 +82,7 @@ class ImageCode(View):
             key: image_uuid_code
             value: random_str
         '''
-
+        # 将生成验证码函数返回到前端
         return generate_code_image(image_uuid_code)
     def post(self,request,image_uuid_code):
         '''
@@ -518,7 +518,7 @@ class Send_email(APIView):
             接受前端邮箱，创建 token 发给celery消息任务
         '''
         email = request.data['email']
-
+    
         try:
             user_email = models.Users.objects.get(email=email)
         

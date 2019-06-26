@@ -426,7 +426,8 @@ class SkuSpecification(BaseModel):
 
 # 订单表
 class Orders(BaseModel):
-    order_code = models.CharField(max_length=250,unique=True)
+    order_code = models.CharField(max_length=250,unique=True)   # 订单编号
+    trade_no = models.CharField(max_length=250,default="")    # 支付编号
     user = models.ForeignKey(Users,on_delete=models.CASCADE,verbose_name='用户')
     total_number = models.IntegerField(verbose_name='总数量')
     total_manoy = models.DecimalField(decimal_places=2,max_digits=8,verbose_name='总金额')
@@ -440,6 +441,7 @@ class Orders(BaseModel):
         (2,'已付款')
     }
     status = models.IntegerField(choices=status_choices,verbose_name='支付状态')
+
     address = models.IntegerField()
 
     class Meta:
