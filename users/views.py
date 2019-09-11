@@ -733,3 +733,4 @@ class Redact_address(APIView):
 
         else:
             return Response({'code':201})
+

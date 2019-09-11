@@ -571,7 +571,7 @@ class Get_my_orders(APIView):
 
 
 '''
-    支付宝支付逻辑：前端但订单号发起请求获取，后台将支付宝支付链接拼接好返回给前端
+    支付宝支付逻辑：前端带订单号发起请求获取，后台将支付宝支付链接拼接好返回给前端
     前端访问支付宝链接，用户扫描支付成功会将一些参数返回给 django 回调接口，回调接口
     将参数获取验证订单支付是否成功，True是成功，成功就修改该订单支付状态为已支付
 '''
@@ -738,3 +738,6 @@ class Demo(APIView):
     def get(self,request):
 
         return render(request,'demo.html')
+
+
+
